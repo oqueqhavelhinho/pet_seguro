@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Pets</title>
+    <meta name="description" content="Cadastre seu pet em Vargem Grande e veja todos os seus amigos de quatro patas!">
+    <meta name="keywords" content="cadastro de pets, Vargem Grande, animais">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar Menu -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <h2 class="title-color">Pet Seguro</h2>
+                <span class="subtitle">Vargem Grande Paulista</span>
+            </div>
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Alternar menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="#" class="sidebar-link active" data-section="my-pets" aria-label="Meus Pets">
+                        <i class="fas fa-paw pet-icon"></i> Meus Pets
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="my-addresses" aria-label="Meus Endereços">
+                        <i class="fas fa-map-marker-alt pet-icon"></i> Meus Endereços
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="personal-data" aria-label="Dados Pessoais">
+                        <i class="fas fa-user pet-icon"></i> Dados Pessoais
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="store" aria-label="Loja de Patinhas">
+                        <i class="fas fa-shopping-cart pet-icon store-icon"></i> Loja de Patinhas
+                    </a>
+                </li>
+                <li class="sidebar-section">
+                    <span class="text-color">Comunidade</span>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="adoption" aria-label="Adoção">
+                        <i class="fas fa-home pet-icon"></i> Adoção
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="lost-pets" aria-label="Pets Perdidos">
+                        <i class="fas fa-search pet-icon"></i> Pets Perdidos
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-section="looking-for-owner" aria-label="Procurando Tutor">
+                        <i class="fas fa-exclamation-triangle pet-icon looking-icon"></i> Procurando Tutor
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link sidebar-logout" data-section="logout" aria-label="Sair">
+                        <i class="fas fa-sign-out-alt pet-icon logout-icon"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header id="top-menu" class="fixed top-0 left-0 w-full bg-white dark-mode:bg-gray-800 shadow-md p-4 z-50">
+        <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center header-container">
+            <div class="flex items-center space-x-4 header-stats">
+                <div class="flex items-center">
+                    <i class="fas fa-coins text-xl mr-2" style="color: var(--achievement-color);"></i>
+                    <span id="menu-points" class="text-lg font-bold text-color">0 Patinhas</span>
+                </div>
+                <div class="flex items-center">
+                    <i id="menu-level-icon" class="fas fa-star text-xl mr-2" style="color: var(--achievement-color);"></i>
+                    <span id="menu-level" class="text-lg font-bold text-color">Iniciante</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 header-actions">
+                <button id="my-pets-btn" class="btn btn-primary" aria-label="Ver painel">
+                    <i class="fas fa-paw"></i> Painel
+                </button>
+                <label class="flex items-center cursor-pointer">
+                    <span class="mr-2 text-color">Tema</span>
+                    <input type="checkbox" id="theme-toggle" class="hidden" onchange="toggleTheme()">
+                    <div class="toggle-switch">
+                        <div class="toggle-ball">
+                            <i class="fas fa-moon text-sm text-gray-700 dark-mode:text-white"></i>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div id="app" class="w-full p-6 relative flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div id="no-pet-message" class="bg-white rounded-lg shadow-md p-6 text-center w-full max-w-lg">
+            <p class="text-2xl font-bold title-color">Que tal cadastrar seu melhor amigo agora?</p>
+            <p class="mt-2 text-color">Crie o perfil do seu pet e deixe Vargem Grande com o focinho do seu filhote!</p>
+            <button onclick="startRegistration()" class="mt-4 btn btn-primary" aria-label="Cadastrar meu pet"><i class="fas fa-plus"></i> Cadastrar meu pet</button>
+        </div>
+
+        <form id="registration-form" class="hidden bg-white rounded-lg shadow-md p-6 w-full max-w-lg" onsubmit="event.preventDefault(); showSummary();">
+            <div class="mb-4">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <p class="text-sm text-color mt-2" id="progress-text">Etapa 1 de 10</p>
+            </div>
+            <div id="step-1" class="step">
+                <h2 class="text-2xl font-bold title-color"><i id="species-icon" class="fas fa-paw pet-icon"></i> Olá, tutor(a)! Qual a espécie do seu pet?</h2>
+                <p class="mt-2 text-color">É hora de apresentar seu amigo de quatro patas!</p>
+                <label for="pet-species" class="block text-color mt-4 required-label">Espécie:</label>
+                <select id="pet-species" class="mt-1 w-full p-2 border rounded" required oninput="validateStep(1); updateSpeciesIcon()" aria-describedby="species-error">
+                    <option value="" selected disabled>Selecione uma espécie</option>
+                    <option value="Cachorro">Cachorro</option>
+                    <option value="Gato">Gato</option>
+                </select>
+                <p id="species-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione uma espécie.</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="cancelRegistration()" class="btn btn-danger" aria-label="Cancelar cadastro">Cancelar</button>
+                    <button id="next-1" type="button" onclick="nextStep(2)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-2" class="step hidden">
+                <h2 class="text-2xl font-bold title-color"><i id="step-2-icon" class="fas fa-paw pet-icon"></i> Qual o nome do seu bichinho?</h2>
+                <p class="mt-2 text-color">Pode caprichar na descrição, queremos conhecer ele(a)!</p>
+                <label for="pet-name" class="block text-color mt-4 required-label">Nome do pet:</label>
+                <input type="text" id="pet-name" class="mt-1 w-full p-2 border rounded" placeholder="Nome do pet" required oninput="validateStep(2)" aria-describedby="name-error">
+                <p id="name-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Digite um nome válido (mínimo 2 letras).</p>
+                <label for="pet-description" class="block text-color mt-4">Descrição (opcional):</label>
+                <textarea id="pet-description" class="mt-1 w-full p-2 border rounded" placeholder="Descrição (opcional)" oninput="validateStep(2)"></textarea>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(1)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-2" type="button" onclick="nextStep(3)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-3" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Gênero</h2>
+                <p class="mt-2 text-color">Sem pressão, só queremos saber como chamar!</p>
+                <label for="pet-gender" class="block text-color mt-4 required-label">Gênero:</label>
+                <select id="pet-gender" class="mt-1 w-full p-2 border rounded" required oninput="validateStep(3)" aria-describedby="gender-error">
+                    <option value="" selected disabled>Selecione o gênero</option>
+                    <option value="Macho">Macho</option>
+                    <option value="Fêmea">Fêmea</option>
+                </select>
+                <p id="gender-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione o gênero.</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(2)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-3" type="button" onclick="nextStep(4)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-4" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Qual a raça e o tamanho do seu pet?</h2>
+                <p class="mt-2 text-color">Seja SRD ou uma raça única, todos são especiais!</p>
+                <label for="pet-breed" class="block text-color mt-4 required-label">Raça:</label>
+                <select id="pet-breed" class="mt-1 w-full p-2 border rounded" required onchange="validateStep(4); toggleOtherBreedInput()" aria-describedby="breed-error">
+                    <option value="" selected disabled>Selecione a raça</option>
+                </select>
+                <input type="text" id="other-breed-input" class="mt-2 w-full p-2 border rounded" placeholder="Digite a raça" oninput="validateStep(4)" aria-describedby="breed-error">
+                <p id="breed-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione ou digite a raça.</p>
+                <fieldset class="mt-4">
+                    <legend class="block text-color required-label">Porte:</legend>
+                    <div class="flex items-center mt-2 space-x-4">
+                        <label class="flex items-center"><input type="radio" name="porte" id="porte-pequeno" value="Pequeno" class="mr-2" onclick="validateStep(4)"> Pequeno</label>
+                        <label class="flex items-center"><input type="radio" name="porte" id="porte-medio" value="Médio" class="mr-2" onclick="validateStep(4)"> Médio</label>
+                        <label class="flex items-center"><input type="radio" name="porte" id="porte-grande" value="Grande" class="mr-2" onclick="validateStep(4)"> Grande</label>
+                    </div>
+                    <p id="porte-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione o porte.</p>
+                </fieldset>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(3)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-4" type="button" onclick="nextStep(5)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-5" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Seu pet é castrado? ✂️</h2>
+                <p class="mt-2 text-color">Uma perguntinha rápida pra cuidar bem dele!</p>
+                <fieldset class="mt-4">
+                    <legend class="block text-color required-label">Selecione uma opção:</legend>
+                    <div class="flex items-center mt-2 space-x-4">
+                        <label class="flex items-center"><input type="radio" name="castrado" id="castrado-sim" value="Sim" class="mr-2" onclick="validateStep(5)"> Sim</label>
+                        <label class="flex items-center"><input type="radio" name="castrado" id="castrado-nao" value="Não" class="mr-2" onclick="validateStep(5)"> Não</label>
+                    </div>
+                    <p id="castrado-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione se o pet é castrado.</p>
+                </fieldset>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(4)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-5" type="button" onclick="nextStep(6)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-6" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Quando seu pet chegou na sua vida? 🎉</h2>
+                <p class="mt-2 text-color">Conta pra gente o ano que você considera o 'aniversário' dele(a) - seja de nascimento ou de adoção!</p>
+                <label for="pet-birth-year" class="block text-color mt-4 required-label">Ano:</label>
+                <select id="pet-birth-year" class="mt-1 w-full p-2 border rounded" required oninput="validateStep(6)" aria-describedby="birth-year-error"></select>
+                <p id="birth-year-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione o ano.</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(5)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-6" type="button" onclick="nextStep(7)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-7" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Qual a cor do seu pet?</h2>
+                <p class="mt-2 text-color">Cor predominante</p>
+                <label for="pet-color" class="block text-color mt-4 required-label">Cor:</label>
+                <select id="pet-color" class="mt-1 w-full p-2 border rounded" required onchange="validateStep(7); toggleOtherColorInput()" aria-describedby="color-error">
+                    <option value="" selected disabled>Selecione a cor</option>
+                    <option>Branco</option>
+                    <option>Preto</option>
+                    <option>Cinza</option>
+                    <option>Marrom</option>
+                    <option>Caramelo</option>
+                    <option>Bege</option>
+                    <option>Vermelho</option>
+                    <option>Creme</option>
+                    <option>Tigrado</option>
+                    <option>Bicolor</option>
+                    <option>Tricolor</option>
+                    <option value="Outra">Outra</option>
+                </select>
+                <input type="text" id="other-color-input" class="mt-2 w-full p-2 border rounded" placeholder="Digite a cor" oninput="validateStep(7)" aria-describedby="color-error">
+                <p id="color-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Selecione ou digite a cor.</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(6)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-7" type="button" onclick="nextStep(8)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-8" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">📷 Vamos ver esse focinho lindo?</h2>
+                <p class="mt-2 text-color">Capriche na foto, ele(a) merece brilhar!</p>
+                <label for="pet-image" class="block text-color mt-4 required-label">Foto do pet:</label>
+                <input type="file" id="pet-image" class="mt-1 w-full p-2 border rounded" accept="image/*" required onchange="previewImage(event); validateStep(8)" aria-describedby="image-error">
+                <p id="image-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Escolha uma foto nítida (mín. 300x300px)!</p>
+                <div id="image-loading">Carregando...</div>
+                <img id="image-preview" class="mt-4 w-full object-cover rounded hidden" alt="Preview da imagem do pet" loading="lazy">
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(7)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-8" type="button" onclick="nextStep(9)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-9" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Em qual bairro seu pet vive? 🏡</h2>
+                <p class="mt-2 text-color">Queremos saber onde ele passeia por aí!</p>
+                <label for="pet-location" class="block text-color mt-4 required-label">Bairro:</label>
+                <input type="text" id="pet-location" class="mt-1 w-full p-2 border rounded" placeholder="Digite o nome do bairro" required oninput="validateStep(9)" aria-describedby="location-error">
+                <p id="location-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Digite o nome do bairro.</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(8)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-9" type="button" onclick="nextStep(10)" class="btn btn-primary disabled" aria-label="Prosseguir para próxima etapa">Prosseguir</button>
+                </div>
+            </div>
+            <div id="step-10" class="step hidden">
+                <h2 class="text-2xl font-bold title-color">Últimos detalhes, tutor(a)! 📞</h2>
+                <p class="mt-2 text-color">Quase lá, só falta seu contato pra finalizar!</p>
+                <label for="pet-contact" class="block text-color mt-4 required-label">Contato:</label>
+                <input type="text" id="pet-contact" class="mt-1 w-full p-2 border rounded" placeholder="(00) 00000-0000" maxlength="15" required oninput="maskPhone(this); validateStep(10)" aria-describedby="contact-error">
+                <p id="contact-error" class="error-message mt-2"><i class="fas fa-exclamation-circle"></i> Digite um número válido!</p>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button type="button" onclick="prevStep(9)" class="btn btn-danger" aria-label="Voltar para etapa anterior">Voltar</button>
+                    <button id="next-10" type="submit" class="btn btn-success disabled" aria-label="Confirmar cadastro">Confirmar</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="summary-message" class="hidden bg-white rounded-lg shadow-md p-6 text-center w-full max-w-lg">
+            <h2 class="text-2xl font-bold title-color">Confira os dados do seu pet! 🐾</h2>
+            <div id="image-loading">Carregando...</div>
+            <img id="summary-image" class="mt-4 w-full object-cover rounded hidden" alt="Imagem do pet" loading="lazy">
+            <div id="summary-content" class="mt-4"></div>
+            <div class="flex justify-center mt-4 space-x-2">
+                <button type="button" onclick="editForm()" class="btn btn-danger" aria-label="Editar dados do pet"><i class="fas fa-edit"></i> Editar</button>
+                <button type="button" onclick="confirmRegistration()" class="btn btn-success" aria-label="Confirmar cadastro"><i class="fas fa-check"></i> Confirmar</button>
+            </div>
+        </div>
+
+        <div id="success-message" class="hidden bg-white rounded-lg shadow-md p-6 text-center w-full max-w-lg">
+            <h2 class="text-2xl font-bold title-color" id="success-title"></h2>
+            <p class="mt-2 text-color">Ele(a) já faz parte da nossa turma!</p>
+            <div class="flex justify-center mt-4 space-x-2">
+                <button id="view-pets-btn" onclick="showPetPanel()" class="btn btn-primary" aria-label="Ver meus pets"><i class="fas fa-paw"></i> Ver meus pets</button>
+                <button id="add-another-btn" onclick="startRegistration()" class="btn btn-primary" aria-label="Cadastrar outro pet"><i class="fas fa-plus"></i> Cadastrar outro</button>
+            </div>
+        </div>
+
+        <div id="pet-panel" class="hidden bg-white rounded-lg shadow-md p-6 w-full max-w-4xl">
+            <h2 class="text-2xl font-bold title-color text-center">Meus Pets</h2>
+            <div class="gamification-card bg-white dark-mode:bg-gray-700 rounded-lg shadow-md p-4 mb-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-coins text-2xl mr-2" style="color: var(--achievement-color);"></i>
+                        <span id="points-text" class="text-lg font-bold text-color">0 Patinhas</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i id="level-icon" class="fas fa-star text-2xl mr-2" style="color: var(--achievement-color);"></i>
+                        <span id="level-text" class="text-lg font-bold text-color">Iniciante</span>
+                        <span class="level-info-icon ml-2" aria-label="Informações sobre níveis">
+                            <i class="fas fa-question-circle text-sm text-color"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="progress-bar mt-2">
+                    <div id="level-progress" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <p class="text-sm text-color mt-1" id="progress-info">0/50 até Cuidador</p>
+            </div>
+            <div id="daily-challenges" class="gamification-card bg-white dark-mode:bg-gray-700 rounded-lg shadow-md p-4 mb-4 collapsed">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold title-color"><i class="fas fa-tasks challenge-icon"></i> Desafios Diários</h3>
+                    <button id="toggle-challenges" class="btn btn-primary text-sm p-1" aria-label="Expandir ou recolher desafios">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <ul id="challenge-list" class="mt-2 text-color"></ul>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                <input type="text" id="pet-search" class="w-full sm:w-1/3 p-2 border rounded" placeholder="Buscar por nome...">
+                <select id="pet-species-filter" class="w-full sm:w-1/4 p-2 border rounded" onchange="filterPets()">
+                    <option value="">Filtrar por espécie</option>
+                    <option value="Cachorro">Cachorro</option>
+                    <option value="Gato">Gato</option>
+                </select>
+                <select id="pet-porte-filter" class="w-full sm:w-1/4 p-2 border rounded" onchange="filterPets()">
+                    <option value="">Filtrar por porte</option>
+                    <option value="Pequeno">Pequeno</option>
+                    <option value="Médio">Médio</option>
+                    <option value="Grande">Grande</option>
+                </select>
+                <select id="pet-color-filter" class="w-full sm:w-1/4 p-2 border rounded" onchange="filterPets()">
+                    <option value="">Filtrar por cor</option>
+                    <option value="Branco">Branco</option>
+                    <option value="Cinza">Cinza</option>
+                    <option value="Preto">Preto</option>
+                    <option value="Caramelo">Caramelo</option>
+                    <option value="Marrom">Marrom</option>
+                    <option value="Bicolor">Bicolor</option>
+                    <option value="Tricolor">Tricolor</option>
+                    <option value="Outra">Outra</option>
+                </select>
+                <select id="sort-by" class="w-full sm:w-1/4 p-2 border rounded" onchange="filterPets(this.value)">
+                    <option value="name">Ordenar por Nome</option>
+                    <option value="birthYear">Ordenar por Ano</option>
+                    <option value="species">Ordenar por Espécie</option>
+                </select>
+            </div>
+            <div id="pet-list" class="mt-4"></div>
+            <div class="flex justify-center mt-4 space-x-2">
+                <button id="new-pet-button" onclick="startRegistration()" class="btn btn-primary" aria-label="Cadastrar outro pet"><i class="fas fa-plus"></i> Cadastrar outro pet</button>
+                <button onclick="exportPetsToPDF()" class="btn btn-primary" aria-label="Exportar como PDF"><i class="fas fa-file-pdf"></i> Exportar como PDF</button>
+            </div>
+        </div>
+
+        <div id="pet-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="text-2xl font-bold title-color" id="modal-title"></h2>
+                <img id="modal-image" class="mt-4 w-full object-cover rounded" alt="Imagem do pet" loading="lazy">
+                <div id="modal-details" class="mt-4" style="color: var(--box-text-color);"></div>
+                <div class="flex justify-end mt-4">
+                    <button onclick="closeModal()" class="btn btn-danger" aria-label="Fechar modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
